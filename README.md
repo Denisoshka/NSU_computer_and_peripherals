@@ -1,0 +1,1 @@
+# NSU_computer_and_peripherals
