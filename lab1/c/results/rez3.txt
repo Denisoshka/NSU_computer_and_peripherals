@@ -1,0 +1,83 @@
+compile with -O0
+n = 50000
+---50000---
+Time taken: 3.010000 sec.
+rez 0.124675
+---100000---
+Time taken: 11.940000 sec.
+rez 0.124675
+---150000---
+Time taken: 26.870000 sec.
+rez 0.124675
+--------------------
+compile with -O1
+n = 50000
+---50000---
+Time taken: 0.800000 sec.
+rez 0.124675
+---100000---
+Time taken: 3.160000 sec.
+rez 0.124675
+---150000---
+Time taken: 7.140000 sec.
+rez 0.124675
+--------------------
+compile with -O2
+n = 50000
+---50000---
+Time taken: 0.790000 sec.
+rez 0.124675
+---100000---
+Time taken: 3.160000 sec.
+rez 0.124675
+---150000---
+Time taken: 7.090000 sec.
+rez 0.124675
+--------------------
+compile with -O3
+n = 50000
+---50000---
+Time taken: 0.820000 sec.
+rez 0.124675
+---100000---
+Time taken: 3.150000 sec.
+rez 0.124675
+---150000---
+Time taken: 7.130000 sec.
+rez 0.124675
+--------------------
+compile with -Os
+n = 50000
+---50000---
+Time taken: 0.780000 sec.
+rez 0.124675
+---100000---
+Time taken: 3.150000 sec.
+rez 0.124675
+---150000---
+Time taken: 7.080000 sec.
+rez 0.124675
+--------------------
+compile with -Ofast
+n = 50000
+---50000---
+Time taken: 0.810000 sec.
+rez 0.124675
+---100000---
+Time taken: 3.180000 sec.
+rez 0.124675
+---150000---
+Time taken: 7.140000 sec.
+rez 0.124675
+--------------------
+compile with -Og
+n = 50000
+---50000---
+Time taken: 0.780000 sec.
+rez 0.124675
+---100000---
+Time taken: 3.170000 sec.
+rez 0.124675
+---150000---
+Time taken: 7.080000 sec.
+rez 0.124675
