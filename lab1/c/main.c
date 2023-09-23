@@ -6,7 +6,6 @@
 long double sin_x(double x, long long int n) {
   long double start_sum = x;
   long double sum = 0.0;
-//  int i = 1;
 
   for (long long int i = 1; i < n; i++) {
     sum += start_sum;
