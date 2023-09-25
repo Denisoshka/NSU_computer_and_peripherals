@@ -3,11 +3,11 @@
 #include <sys/times.h>// for times
 #include <unistd.h>   // for sysconf
 
-long double sin_x(double x, long long int n) {
-  long double start_sum = x;
-  long double sum = 0.0;
+double sin_x(double x, long long int n) {
+  double start_sum = x;
+  double sum = 0.0;
 
-  for (long long int i = 1; i < n; i++) {
+  for (long long int i = 1; i <= n; i++) {
     sum += start_sum;
     start_sum *= -1.0 * x * x / ((2 * i) * (2 * i + 1));
   }

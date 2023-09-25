@@ -7,52 +7,45 @@ sin_x:
 .LFB51:
 	.cfi_startproc
 	endbr64
-	movsd	%xmm0, -16(%rsp)
-	fldl	-16(%rsp)
-	movapd	%xmm0, %xmm1
 	cmpq	$1, %rdi
 	jle	.L4
-	xorpd	.LC1(%rip), %xmm0
-	fldz
+	movapd	%xmm0, %xmm4
+	xorpd	.LC1(%rip), %xmm4
 	movl	$3, %ecx
 	movl	$1, %eax
-	mulsd	%xmm1, %xmm0
-	jmp	.L3
+	pxor	%xmm1, %xmm1
+	mulsd	%xmm0, %xmm4
 	.p2align 4,,10
 	.p2align 3
-.L7:
-	fxch	%st(1)
 .L3:
-	pxor	%xmm1, %xmm1
-	fadd	%st(1), %st
-	fxch	%st(1)
-	movapd	%xmm0, %xmm2
+	pxor	%xmm3, %xmm3
+	movapd	%xmm4, %xmm2
+	addsd	%xmm0, %xmm1
 	movq	%rcx, %rdx
 	imulq	%rax, %rdx
 	addq	$1, %rax
 	addq	$2, %rcx
 	addq	%rdx, %rdx
-	cvtsi2sdq	%rdx, %xmm1
-	divsd	%xmm1, %xmm2
-	movsd	%xmm2, -16(%rsp)
-	fmull	-16(%rsp)
+	cvtsi2sdq	%rdx, %xmm3
+	divsd	%xmm3, %xmm2
+	mulsd	%xmm2, %xmm0
 	cmpq	%rax, %rdi
-	jne	.L7
-	fstp	%st(0)
+	jne	.L3
+	movapd	%xmm1, %xmm0
 	ret
 	.p2align 4,,10
 	.p2align 3
 .L4:
-	fstp	%st(0)
-	fldz
+	pxor	%xmm1, %xmm1
+	movapd	%xmm1, %xmm0
 	ret
 	.cfi_endproc
 .LFE51:
 	.size	sin_x, .-sin_x
 	.section	.rodata.str1.1,"aMS",@progbits,1
-.LC3:
+.LC2:
 	.string	"Time taken: %lf sec.\n"
-.LC4:
+.LC3:
 	.string	"rez %lf\n"
 	.section	.text.startup,"ax",@progbits
 	.p2align 4
@@ -66,10 +59,10 @@ main:
 	.cfi_def_cfa_offset 16
 	.cfi_offset 6, -16
 	movl	$10, %edx
-	movq	%rsi, %rbp
 	pushq	%rbx
 	.cfi_def_cfa_offset 24
 	.cfi_offset 3, -24
+	movq	%rsi, %rbx
 	subq	$104, %rsp
 	.cfi_def_cfa_offset 128
 	movq	8(%rsi), %rdi
@@ -78,74 +71,66 @@ main:
 	movq	%rax, 88(%rsp)
 	xorl	%eax, %eax
 	call	strtoll@PLT
-	movq	16(%rbp), %rdi
+	movq	16(%rbx), %rdi
 	xorl	%esi, %esi
-	movq	%rax, %rbx
+	movq	%rax, %rbp
 	call	strtod@PLT
 	movl	$2, %edi
-	movsd	%xmm0, (%rsp)
+	movsd	%xmm0, 8(%rsp)
 	call	sysconf@PLT
 	leaq	16(%rsp), %rdi
-	movq	%rax, %rbp
+	movq	%rax, %rbx
 	call	times@PLT
-	fldl	(%rsp)
-	cmpq	$1, %rbx
-	jle	.L12
-	movsd	(%rsp), %xmm3
+	cmpq	$1, %rbp
+	jle	.L11
+	movsd	8(%rsp), %xmm0
 	movl	$3, %ecx
-	fldz
 	movl	$1, %eax
-	movapd	%xmm3, %xmm1
-	xorpd	.LC1(%rip), %xmm1
-	mulsd	%xmm3, %xmm1
-	jmp	.L10
+	pxor	%xmm1, %xmm1
+	movapd	%xmm0, %xmm4
+	xorpd	.LC1(%rip), %xmm4
+	mulsd	%xmm0, %xmm4
 	.p2align 4,,10
 	.p2align 3
-.L16:
-	fxch	%st(1)
-.L10:
-	pxor	%xmm0, %xmm0
-	fadd	%st(1), %st
-	fxch	%st(1)
-	movapd	%xmm1, %xmm2
+.L9:
+	pxor	%xmm3, %xmm3
+	movapd	%xmm4, %xmm2
+	addsd	%xmm0, %xmm1
 	movq	%rcx, %rdx
 	imulq	%rax, %rdx
 	addq	$1, %rax
 	addq	$2, %rcx
 	addq	%rdx, %rdx
-	cvtsi2sdq	%rdx, %xmm0
-	divsd	%xmm0, %xmm2
-	movsd	%xmm2, (%rsp)
-	fmull	(%rsp)
-	cmpq	%rax, %rbx
-	jne	.L16
-	fstp	%st(0)
-.L9:
+	cvtsi2sdq	%rdx, %xmm3
+	divsd	%xmm3, %xmm2
+	mulsd	%xmm2, %xmm0
+	cmpq	%rax, %rbp
+	jne	.L9
+.L8:
 	leaq	48(%rsp), %rdi
-	fstpt	(%rsp)
+	movsd	%xmm1, 8(%rsp)
 	call	times@PLT
 	movq	48(%rsp), %rax
 	pxor	%xmm0, %xmm0
 	subq	16(%rsp), %rax
-	pxor	%xmm1, %xmm1
+	pxor	%xmm2, %xmm2
 	cvtsi2sdq	%rax, %xmm0
 	movl	$1, %edi
 	movl	$1, %eax
-	cvtsi2sdq	%rbp, %xmm1
-	leaq	.LC3(%rip), %rsi
-	divsd	%xmm1, %xmm0
+	cvtsi2sdq	%rbx, %xmm2
+	leaq	.LC2(%rip), %rsi
+	divsd	%xmm2, %xmm0
 	call	__printf_chk@PLT
-	fldt	(%rsp)
+	movsd	8(%rsp), %xmm1
 	movl	$1, %esi
 	movq	stdout(%rip), %rdi
-	leaq	.LC4(%rip), %rdx
+	leaq	.LC3(%rip), %rdx
 	movl	$1, %eax
-	fstpl	(%rsp)
-	movsd	(%rsp), %xmm0
+	movapd	%xmm1, %xmm0
 	call	__fprintf_chk@PLT
 	movq	88(%rsp), %rax
 	subq	%fs:40, %rax
-	jne	.L15
+	jne	.L14
 	addq	$104, %rsp
 	.cfi_remember_state
 	.cfi_def_cfa_offset 24
@@ -155,12 +140,11 @@ main:
 	popq	%rbp
 	.cfi_def_cfa_offset 8
 	ret
-.L12:
+.L11:
 	.cfi_restore_state
-	fstp	%st(0)
-	fldz
-	jmp	.L9
-.L15:
+	pxor	%xmm1, %xmm1
+	jmp	.L8
+.L14:
 	call	__stack_chk_fail@PLT
 	.cfi_endproc
 .LFE52:

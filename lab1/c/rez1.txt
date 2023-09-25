@@ -1,83 +1,83 @@
 compile with -O0
-n = 85000
----85000---
-Time taken: 8.610000 sec.
+n = 3000000000
+---3000000000---
+Time taken: 22.240000 sec.
 rez 0.124675
----170000---
-Time taken: 34.540000 sec.
+---6000000000---
+Time taken: 36.400000 sec.
 rez 0.124675
----255000---
-Time taken: 77.800000 sec.
+---9000000000---
+Time taken: 54.620000 sec.
 rez 0.124675
 --------------------
 compile with -O1
-n = 85000
----85000---
-Time taken: 2.270000 sec.
+n = 3000000000
+---3000000000---
+Time taken: 4.530000 sec.
 rez 0.124675
----170000---
-Time taken: 9.360000 sec.
+---6000000000---
+Time taken: 9.140000 sec.
 rez 0.124675
----255000---
-Time taken: 20.660000 sec.
+---9000000000---
+Time taken: 13.640000 sec.
 rez 0.124675
 --------------------
 compile with -O2
-n = 85000
----85000---
-Time taken: 2.320000 sec.
+n = 3000000000
+---3000000000---
+Time taken: 4.540000 sec.
 rez 0.124675
----170000---
-Time taken: 9.100000 sec.
+---6000000000---
+Time taken: 9.080000 sec.
 rez 0.124675
----255000---
-Time taken: 20.500000 sec.
+---9000000000---
+Time taken: 13.840000 sec.
 rez 0.124675
 --------------------
 compile with -O3
-n = 85000
----85000---
-Time taken: 2.310000 sec.
+n = 3000000000
+---3000000000---
+Time taken: 4.590000 sec.
 rez 0.124675
----170000---
-Time taken: 9.140000 sec.
+---6000000000---
+Time taken: 9.150000 sec.
 rez 0.124675
----255000---
-Time taken: 20.500000 sec.
+---9000000000---
+Time taken: 13.840000 sec.
 rez 0.124675
 --------------------
 compile with -Os
-n = 85000
----85000---
-Time taken: 2.310000 sec.
+n = 3000000000
+---3000000000---
+Time taken: 4.690000 sec.
 rez 0.124675
----170000---
-Time taken: 9.110000 sec.
+---6000000000---
+Time taken: 9.350000 sec.
 rez 0.124675
----255000---
-Time taken: 20.520000 sec.
+---9000000000---
+Time taken: 14.060000 sec.
 rez 0.124675
 --------------------
 compile with -Ofast
-n = 85000
----85000---
-Time taken: 2.270000 sec.
+n = 3000000000
+---3000000000---
+Time taken: 4.580000 sec.
 rez 0.124675
----170000---
-Time taken: 9.130000 sec.
+---6000000000---
+Time taken: 9.170000 sec.
 rez 0.124675
----255000---
-Time taken: 20.500000 sec.
+---9000000000---
+Time taken: 13.730000 sec.
 rez 0.124675
 --------------------
 compile with -Og
-n = 85000
----85000---
-Time taken: 2.280000 sec.
+n = 3000000000
+---3000000000---
+Time taken: 4.560000 sec.
 rez 0.124675
----170000---
-Time taken: 9.130000 sec.
+---6000000000---
+Time taken: 9.260000 sec.
 rez 0.124675
----255000---
-Time taken: 20.570000 sec.
+---9000000000---
+Time taken: 13.870000 sec.
 rez 0.124675
