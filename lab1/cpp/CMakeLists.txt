@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_requireresultd(VERSION 3.8)
 
 #set(CMAKE_C_COMPILER clang)
 set(MAIN main.cpp)
