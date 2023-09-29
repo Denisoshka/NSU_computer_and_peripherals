@@ -117,20 +117,30 @@ void InvertMatrix(const float *A, float *Result) {
   auto Degree2 = new float[N * N];
 
   FillI(I);
-  FillB(A, B);
 
+  timespec start, end;
+  clock_gettime(CLOCK_MONOTONIC_RAW,
+                &start);
+  FillB(A, B);
   FillR(R, I, B, A);
 
   bool flag = true;
+
   AddMatrix(Result, I, R);
   MultMatrix(Degree1, R, R);
   AddMatrix(I, Result, Degree1);
+
   for (size_t i = 2; i < M; ++i, flag = !flag) {
     MultMatrix((flag) ? Degree2 : Degree1, (flag) ? Degree1 : Degree2, R);
     AddMatrix(I, I, (flag) ? Degree2 : Degree1);
   }
   MultMatrix(Result, I, B);
 
+  clock_gettime(CLOCK_MONOTONIC_RAW,
+                &end);
+  std::cout << "Time with vectorization: "
+            << (double)end.tv_sec - (double)start.tv_sec + 1e-9 * ((double)end.tv_nsec - (double)start.tv_nsec)
+            << " sec." << std::endl;
 
   delete[] Degree1;
   delete[] Degree2;
@@ -188,10 +198,12 @@ int main() {
                    0,1,4,4,7,
                    0,0,0,7,0,
                    0,3,0,0,1};*/
+/*
   for (int i = 0; i < N * N; ++i) {
     A[i] = test2[i];
   }
-
+*/
+  FillMatrix(A);
   InvertMatrix(A, Result);
   Print(Result);
 
