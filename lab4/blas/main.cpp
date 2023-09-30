@@ -1,3 +1,4 @@
+#include <cblas.h>
 #include <immintrin.h>
 #include <cfloat>// FLT_MIN
 #include <cmath> // fabs()
@@ -5,9 +6,11 @@
 #include <cstring>
 #include <ctime>
 #include <iostream>
+#include <cblas-atlas.h>
+#include <mkl_cblas.h>
 
 size_t IntrinCount = 256 / 8 / 4;
-size_t Alignment = 256 / 8 ;
+size_t Alignment = 256 / 8;
 size_t N = 2048;
 size_t M = 10;
 
@@ -124,11 +127,10 @@ void InvertMatrix(float *A, float *Result) {
   float *Degree1 = (float *) aligned_alloc(Alignment, N * N * sizeof(float));
   float *Degree2 = (float *) aligned_alloc(Alignment, N * N * sizeof(float));
   FillI(I);
-//  start count time //////////////////////////////
+  //  start count time //////////////////////////////
   FillMatrix(A);
   timespec start, end;
-  clock_gettime(CLOCK_MONOTONIC_RAW,
-                &start);
+  clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
   FillB(A, B);
   FillR(R, I, B, A);
@@ -145,12 +147,11 @@ void InvertMatrix(float *A, float *Result) {
   }
   MultMatrix(Result, I, B);
 
-  clock_gettime(CLOCK_MONOTONIC_RAW,
-                &end);
+  clock_gettime(CLOCK_MONOTONIC_RAW, &end);
   std::cout << "Time with vectorization: "
-            << (double)end.tv_sec - (double)start.tv_sec + 1e-9 * ((double)end.tv_nsec - (double)start.tv_nsec)
+            << (double) end.tv_sec - (double) start.tv_sec + 1e-9 * ((double) end.tv_nsec - (double) start.tv_nsec)
             << " sec." << std::endl;
-///////////////////////////////////////
+  ///////////////////////////////////////
   free(R);
   free(Degree1);
   free(Degree2);
@@ -196,7 +197,7 @@ int main() {
 
   InvertMatrix(A, Result);
 
-//  Print(Result);
+  //  Print(Result);
 
   free(A);
   free(Result);
