@@ -16,10 +16,7 @@ int main() {
     fprintf(stderr, "Ошибка: инициализация не выполнена, код: %d.\n", r);
     return 1;
   }
-  // задать уровень подробности отладочных сообщений
-  //  libusb_set_debug(ctx, 3);
-  //  libusb_set_debug(ctx, 3);
-  // получить список всех найденных USB- устройств
+
   cnt = libusb_get_device_list(ctx, &devs);
   if (cnt < 0) {
     fprintf(stderr, "Ошибка: список USB устройств не получен %d.\n", r);
