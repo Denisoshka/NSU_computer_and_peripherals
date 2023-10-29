@@ -1,12 +1,14 @@
-#include <cblas.h>
+#include <xmmintrin.h>
 #include <cfloat>// FLT_MIN
 #include <cmath> // fabs()
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <sys/times.h>// for times
 #include <unistd.h>   // for sysconf
 
-size_t Alignment = 256 / 8;
+size_t IntrinCount = 128 / 8 / 4;
+size_t Alignment = 128 / 8;
 size_t N = 2048;
 size_t M = 10;
 
@@ -16,11 +18,13 @@ void GetNorms(float &A_1, float &A_infinity, float *matrix) {
     float sum_row;
     float sum_column;
 
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++)// rows
+    {
         sum_row = 0;
         sum_column = 0;
 
-        for (int j = 0; j < N; j++) {
+        for (int j = 0; j < N; j++)// columns
+        {
             sum_row += std::fabs(matrix[N * i + j]);
             sum_column += std::fabs(matrix[j * N + i]);
         }
@@ -29,6 +33,7 @@ void GetNorms(float &A_1, float &A_infinity, float *matrix) {
         A_infinity = (sum_column > A_infinity) ? sum_column : A_infinity;
     }
 }
+
 
 inline void FillI(float *I) {
     for (int i = 0; i < N; ++i) {
@@ -41,13 +46,14 @@ inline void FillI(float *I) {
 inline void FillB(float *matrix, float *B) {
     float A_1, A_infinity;
     GetNorms(A_1, A_infinity, matrix);
-    float multiplier = A_1 * A_infinity;
+    float multiplier = (A_1 * A_infinity);
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
             B[N * i + j] = matrix[j * N + i] / multiplier;
         }
     }
 }
+
 
 inline void FillMatrix(float *matrix) {
     for (int i = 0; i < N * N; ++i) {
@@ -56,19 +62,47 @@ inline void FillMatrix(float *matrix) {
     }
 }
 
-inline void MultMatrix(float *Result, float *Matrix1, float *Matrix2) {
-    cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, N, N, N, 1.0, Matrix1, N, Matrix2, N, 0.0,
-                Result, N);
+void MultMatrix(float *Result, float *Matrix1, float *Matrix2) {
+    __m128 *_m128_Result;
+    __m128 *_m128_Matrix2;
+    _m128_Result = (__m128 *) Result;
+    _m128_Matrix2 = (__m128 *) Matrix2;
+
+    memset(Result, 0, N * N * sizeof(*Result));
+
+    for (int i = 0; i < N; ++i) {
+        __m128 *_m128_rez = _m128_Result + (i * N / IntrinCount);
+        for (int k = 0; k < N; ++k) {
+            __m128 _m128_tmp;
+            __m128 _m128_matr1 = _mm_set1_ps(Matrix1[i * N + k]);
+            __m128 *_m128_matr2 = _m128_Matrix2 + (k * N / IntrinCount);
+
+            for (int j = 0; j < N / IntrinCount; ++j) {
+                _m128_tmp = _mm_mul_ps(_m128_matr1, _m128_matr2[j]);
+                _m128_rez[i] = _mm_add_ps(_m128_rez[i], _m128_tmp);
+            }
+        }
+    }
 }
 
 inline void SubMatrix(float *Result, float *Reduced, float *Subtrahend) {
-    cblas_saxpy(N * N, -1.0, Subtrahend, 1, Reduced, 1);
-    cblas_scopy(N * N, Reduced, 1, Result, 1);
+    __m128 *_m128_Result = (__m128 *) Result;
+    __m128 *_m128_Reduced = (__m128 *) Reduced;
+    __m128 *_m128_Subtrahend = (__m128 *) Subtrahend;
+
+    for (size_t i = 0; i < (N * N) / IntrinCount; ++i) {
+        _m128_Result[i] = _mm_sub_ps(_m128_Reduced[i], _m128_Subtrahend[i]);
+    }
 }
 
 inline void AddMatrix(float *Result, float *Summand1, float *Summand2) {
-    cblas_saxpy(N * N, 1.0, Summand2, 1, Summand1, 1);
-    cblas_scopy(N * N, Summand1, 1, Result, 1);
+    __m128 *_m128_Result = (__m128 *) Result;
+    __m128 *_m128_Summand1 = (__m128 *) Summand1;
+    __m128 *_m128_Summand2 = (__m128 *) Summand2;
+
+    for (size_t i = 0; i < (N * N) / IntrinCount; ++i) {
+        _m128_Result[i] = _mm_add_ps(_m128_Summand1[i], _m128_Summand2[i]);
+    }
 }
 
 void FillR(float *Result, float *I, float *B, float *A) {
@@ -82,8 +116,10 @@ void InvertMatrix(float *A, float *Result) {
     float *I = (float *) aligned_alloc(Alignment, N * N * sizeof(float));
     float *Degree1 = (float *) aligned_alloc(Alignment, N * N * sizeof(float));
     float *Degree2 = (float *) aligned_alloc(Alignment, N * N * sizeof(float));
+
     FillI(I);
     FillMatrix(A);
+
     struct tms start1, end1;
     long clocks_per_sec = sysconf(_SC_CLK_TCK);
     long clocks;
@@ -105,11 +141,9 @@ void InvertMatrix(float *A, float *Result) {
     MultMatrix(Result, I, B);
 
     times(&end1);
-
     clocks = end1.tms_utime - start1.tms_utime;
-    std::cout << "Time with BLAS: " <<  (double) clocks / clocks_per_sec <<"sec.\n" << std::endl;
+    std::cout << "SSE matrix mult time taken : " <<  (double) clocks / clocks_per_sec <<"sec.\n" << std::endl;
 
-    /// end count time
     free(R);
     free(Degree1);
     free(Degree2);
@@ -118,6 +152,7 @@ void InvertMatrix(float *A, float *Result) {
 }
 
 int main() {
+
     auto A = (float *) std::aligned_alloc(Alignment, N * N * sizeof(float));
     auto Result = (float *) std::aligned_alloc(Alignment, N * N * sizeof(float));
 

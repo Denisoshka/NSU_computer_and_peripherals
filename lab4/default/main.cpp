@@ -8,7 +8,6 @@
 
 size_t N = 2048;
 size_t M = 10;
-//void Print(const float *matrix);
 
 void GetNorms(float &A_1, float &A_infinity, const float *matrix) {
     A_1 = FLT_MIN;
@@ -39,10 +38,6 @@ inline void FillI(float *I) {
             I[N * i + j] = (float) (i == j);
         }
     }
-    /*
-      for (int i = 0; i < N * N; ++i) {
-        I[i] = (float) (i / N == i % N);
-      }*/
 }
 
 inline void FillB(const float *matrix, float *B) {
@@ -55,11 +50,6 @@ inline void FillB(const float *matrix, float *B) {
             B[N * i + j] = matrix[j * N + i] / (A_1 * A_infinity);
         }
     }
-
-    /*
-      for (int i = 0; i < N * N; ++i) {
-        B[i] = matrix[(i % N) * N + i / N] / (A_1 * A_infinity);
-      }*/
 }
 
 
@@ -119,6 +109,8 @@ void InvertMatrix(const float *A, float *Result) {
     auto Degree2 = new float[N * N];
 
     FillI(I);
+    FillMatrix(A);
+
     struct tms start1, end1;
     long clocks_per_sec = sysconf(_SC_CLK_TCK);
     long clocks;
@@ -163,50 +155,8 @@ int main() {
     auto *A = new float[N * N];
     auto *Result = new float[N * N];
 
-    /*
-    float test1[] = {1, 1, 0, 0, 2, 3, 0, 1, 4};
-    for (int i = 0; i < N * N; ++i) {
-      A[i] = test1[i];
-    }
-    Print(A);
-    std::cout << "====================================================================" << std::endl;
-    InvertMatrix(A, Result);
-    Print(Result);
-    std::cout << "====================================================================" << std::endl;
-    float test2[] = {1, 2, 4, 3, 5, 7, 6, 8, 9};
-    for (int i = 0; i < N * N; ++i) {
-      A[i] = test2[i];
-    }
-    InvertMatrix(A, Result);
-    Print(Result);
-    */
-
-//  FillMatrix(A);
-    /*float test2[] = {34, 23, 34, 0, 0, 0, 0, 0,
-                     34, 32344, 34, 0, 83, 0, 0, 0,
-                     0, 43, 0, 67, 0, 0,  0,  0,
-                     0, 0, 6968, 0, 0, 0,  45, 0,
-                     9, 0, 0, 0, 0, 7, 0,  0,
-                     0, 0, 0, 0, 0, 0, 0, 467,
-                     0, 9876, 0, 0, 4548, 0, 68, 0
-    };*/
-    /*float test2[] = {1,1,0,0,
-                     0,2,3,3,
-                     0,1,4,4,
-                     0,0,0,7};*/
-/*  float test2[] = {1,1,0,0,4,
-                   0,2,3,3,5,
-                   0,1,4,4,7,
-                   0,0,0,7,0,
-                   0,3,0,0,1};*/
-/*
-  for (int i = 0; i < N * N; ++i) {
-    A[i] = test2[i];
-  }
-*/
     FillMatrix(A);
     InvertMatrix(A, Result);
-//  Print(Result);
 
     delete[] A;
     delete[] Result;

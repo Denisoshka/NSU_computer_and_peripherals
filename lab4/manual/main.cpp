@@ -3,15 +3,14 @@
 #include <cmath> // fabs()
 #include <cstdlib>
 #include <cstring>
-#include <ctime>
 #include <iostream>
+#include <sys/times.h>// for times
+#include <unistd.h>   // for sysconf
 
 size_t IntrinCount = 256 / 8 / 4;
 size_t Alignment = 256 / 8;
 size_t N = 2048;
 size_t M = 10;
-
-void Print(float *matrix);
 
 void GetNorms(float &A_1, float &A_infinity, float *matrix) {
     A_1 = FLT_MIN;
@@ -40,10 +39,6 @@ inline void FillI(float *I) {
             I[N * i + j] = (float) (i == j);
         }
     }
-    /*
-      for (int i = 0; i < N * N; ++i) {
-        I[i] = (float) (i / N == i % N);
-      }*/
 }
 
 inline void FillB(float *matrix, float *B) {
@@ -52,14 +47,14 @@ inline void FillB(float *matrix, float *B) {
     float multiplier = (A_1 * A_infinity);
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-            B[N * i + j] = matrix[j * N + i] /multiplier;
+            B[N * i + j] = matrix[j * N + i];// /multiplier;
         }
-    }/*
+    }
     __m256 * _m256_B = (__m256 * )B;
     __m256 _m256_multiplier = _mm256_set1_ps(multiplier);
     for (int i = 0; i < N*N/IntrinCount; ++i){
       _m256_B[i] =   _mm256_div_ps(_m256_B[i], _m256_multiplier);
-    }*/
+    }
 }
 
 
@@ -126,11 +121,11 @@ void InvertMatrix(float *A, float *Result) {
     float *Degree1 = (float *) aligned_alloc(Alignment, N * N * sizeof(float));
     float *Degree2 = (float *) aligned_alloc(Alignment, N * N * sizeof(float));
     FillI(I);
-//  start count time //////////////////////////////
     FillMatrix(A);
-    timespec start, end;
-    clock_gettime(CLOCK_MONOTONIC_RAW,
-                  &start);
+    struct tms start1, end1;
+    long clocks_per_sec = sysconf(_SC_CLK_TCK);
+    long clocks;
+    times(&start1);
 
     FillB(A, B);
     FillR(R, I, B, A);
@@ -147,12 +142,11 @@ void InvertMatrix(float *A, float *Result) {
     }
     MultMatrix(Result, I, B);
 
-    clock_gettime(CLOCK_MONOTONIC_RAW,
-                  &end);
-    std::cout << "Time with vectorization: "
-              << (double) end.tv_sec - (double) start.tv_sec + 1e-9 * ((double) end.tv_nsec - (double) start.tv_nsec)
-              << " sec." << std::endl;
-///////////////////////////////////////
+    times(&end1);
+
+    clocks = end1.tms_utime - start1.tms_utime;
+    std::cout << "Time with AVX: " <<  (double) clocks / clocks_per_sec <<"sec.\n" << std::endl;
+
     free(R);
     free(Degree1);
     free(Degree2);
@@ -175,30 +169,7 @@ int main() {
     auto A = (float *) std::aligned_alloc(Alignment, N * N * sizeof(float));
     auto Result = (float *) std::aligned_alloc(Alignment, N * N * sizeof(float));
 
-    /*
-    float test1[] = {1, 1, 0, 0, 2, 3, 0, 1, 4};
-    for (int i = 0; i < N * N; ++i) {
-      A[i] = test1[i];
-    }
-    Print(A);
-    std::cout << "====================================================================" << std::endl;
     InvertMatrix(A, Result);
-    Print(Result);
-    std::cout << "====================================================================" << std::endl;
-    */
-    float test2[] = {9, 1, 0, 0, 5, 2, 3, 3, 0, 1, 4, 4, 0, 0, 0, 9};
-    /*float test2[]
-            = {34, 23, 34, 0, 0, 0, 0, 0, 34, 32344, 34, 0, 83, 0, 0, 0, 0, 43, 0, 67,  0, 0,    0, 0, 0,    0, 6968, 0,
-               0,  0,  45, 0, 9, 0, 0, 0, 0,  7,     0,  0, 0,  0, 0, 0, 0, 0,  0, 467, 0, 9876, 0, 0, 4548, 0, 68,   0};
-    */
-    /*for (int i = 0; i < N * N; ++i) {
-      A[i] = test2[i];
-    }*/
-
-
-    InvertMatrix(A, Result);
-
-//  Print(Result);
 
     free(A);
     free(Result);
