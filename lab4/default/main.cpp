@@ -123,9 +123,7 @@ void InvertMatrix(const float *A, float *Result) {
     long clocks_per_sec = sysconf(_SC_CLK_TCK);
     long clocks;
     times(&start1);
-    timespec start, end;
-    clock_gettime(CLOCK_MONOTONIC_RAW,
-                  &start);
+
     FillB(A, B);
     FillR(R, I, B, A);
 
@@ -142,14 +140,8 @@ void InvertMatrix(const float *A, float *Result) {
     MultMatrix(Result, I, B);
     times(&end1);
 
-    clock_gettime(CLOCK_MONOTONIC_RAW,
-                  &end);
     clocks = end1.tms_utime - start1.tms_utime;
-    std::cout << "default matrix mult time taken: " <<  (double) clocks / clocks_per_sec <<"sec.\n" << std::endl;
-    std::cout << "default matrix mult time taken: "
-              << (double) end.tv_sec - (double) start.tv_sec +
-                 1e-9 * ((double) end.tv_nsec - (double) start.tv_nsec)
-              << " sec." << std::endl;
+    std::cout << "default matrix mult time taken : " <<  (double) clocks / clocks_per_sec <<"sec.\n" << std::endl;
 
     delete[] Degree1;
     delete[] Degree2;

@@ -52,14 +52,14 @@ inline void FillB(float *matrix, float *B) {
     float multiplier = (A_1 * A_infinity);
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-            B[N * i + j] = matrix[j * N + i];
+            B[N * i + j] = matrix[j * N + i] /multiplier;
         }
-    }
+    }/*
     __m256 * _m256_B = (__m256 * )B;
     __m256 _m256_multiplier = _mm256_set1_ps(multiplier);
     for (int i = 0; i < N*N/IntrinCount; ++i){
       _m256_B[i] =   _mm256_div_ps(_m256_B[i], _m256_multiplier);
-    }
+    }*/
 }
 
 
