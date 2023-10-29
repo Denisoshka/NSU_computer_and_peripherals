@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 set(CMAKE_C_COMPILER g++)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -march=native")
 set(MAIN main.cpp)
 project(lab4 CXX)
 add_executable(${PROJECT_NAME} ${MAIN})

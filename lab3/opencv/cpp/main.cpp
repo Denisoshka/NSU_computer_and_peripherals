@@ -163,7 +163,7 @@ int secondVideoTest(const std::string &FileOutName) {
 }
 
 int main() {
-    firstVideoTest("out_1.txt");
+//    firstVideoTest("out_1.txt");
     secondVideoTest("out_2.txt");
     return 0;
 }
