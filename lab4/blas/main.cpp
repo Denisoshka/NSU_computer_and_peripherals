@@ -122,7 +122,9 @@ int main() {
     auto Result = (float *) std::aligned_alloc(Alignment, N * N * sizeof(float));
 
     InvertMatrix(A, Result);
-
+    for (int i = 0; i < 10; i ++){
+        std::cout<<Result[i]<<" ";
+    }
     free(A);
     free(Result);
 

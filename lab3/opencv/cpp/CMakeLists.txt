@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 
-set(MAIN main.cpp
-        ../../../lab4/blas/main.cpp)
+set(MAIN main.cpp)
 project(cpp CXX)
 
 find_package(OpenCV REQUIRED)
