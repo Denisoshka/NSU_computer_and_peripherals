@@ -1,9 +1,18 @@
+#include <fstream>
 #include <iostream>
-#include <string>
 
-const size_t gkMaxFragmentsCount = 32;
-const size_t gkOffset = 16 * 1024 * 1024 / sizeof(uint32_t);// 16 MB
-const size_t gkNumberOfPasses = 10;
+uint64_t L1_CACHE = 1024 * 32;      // 32 KB
+uint64_t L2_CACHE = 1024 * 512;     // 512 KB
+uint64_t L3_CACHE =  1024 * 1024 * 8;// 8 MB
+uint64_t OFFSET = 1024 * 1024 * 16;     // 16 MB
+
+union ticks {
+  long long t64;
+
+  struct s32 {
+    long th, tl;
+  } t32;
+} start, end;
 
 void MultiplyMatrices() {
   const int matrixSize = 2048;
@@ -30,86 +39,57 @@ void MultiplyMatrices() {
   delete[] M3;
 }
 
-union ticks {
-  unsigned long long t64;
-
-  struct s32 {
-    long th, tl;
-  } t32;
-};
-
-void Clock(volatile ticks& time) {
-  asm("rdtsc\n" : "=a"(time.t32.th), "=d"(time.t32.tl));
-}
-
 void fillArray(uint32_t *array, const size_t size, const size_t numberOfFragments,
                const size_t offset) {
-  for( size_t i = 0; i < numberOfFragments - 1; ++i ) {
-    for( size_t j = 0; j < offset; ++j ) {
+  for( size_t i = 0; i < numberOfFragments - 1; i++ ) {
+    for( size_t j = 0; j < size; j++ ) {
       array[offset * i + j] = (i + 1) * offset + j;
     }
   }
-  for( size_t i = 0; i < size / numberOfFragments; ++i ) {
-    array[offset * (numberOfFragments - 1) + i] = i + 1;
+  for( size_t j = 0; j < size - 1; j++ ) {
+    array[offset * (numberOfFragments - 1) + j] = (j + 1);
   }
-  if (numberOfFragments == 1){
-    array[offset-1] = 1;
-  }else{
-    array[(numberOfFragments - 1) * offset + (numberOfFragments - 1)] = 0;
-  }
+  array[offset * (numberOfFragments - 1) + size - 1] = 0;
 }
 
-uint32_t getTicks(const uint32_t *array, size_t size, int numberOfPasses) {
-  uint32_t i, k;
+double count(uint32_t *arr, size_t size) {
   uint64_t min = UINT64_MAX;
-  std::cout << min << std::endl;
+  for( size_t l = 0; l < 20; l++ ) {
+    size_t k = 0;
+    asm("rdtsc\n" : "=a"(start.t32.th), "=d"(start.t32.tl));
+    for( size_t i = 0; i < size; i++ ) {
+      k = arr[k];
+    }
+    asm("rdtsc\n" : "=a"(end.t32.th), "=d"(end.t32.tl));
 
-  for( int p = 0; p < numberOfPasses; ++p ) {
-    ticks start{}, end{};
-    Clock(start);
-    for( i = 0, k = 0; i < size; ++i ) {
-      k = array[k];
+    if( k == 234 ) {
+      std::cout << "lol";
     }
-    Clock(end);
-    if( k == 253 ) {
-      std::cout << "No optimizations";
-    }
-    uint64_t newTime = (end.t64 - start.t64) / size / numberOfPasses;
-    min = std::min(min, newTime);
-    if( start.t64 == 323 && end.t64 == 324 && min == 34 ) {
-      std::cout << "No optimizations";
-    }
+    uint64_t time = end.t64 - start.t64;
+    min = (min < time) ? min : time;
   }
-  return min;
+  return static_cast<double>(min) / static_cast<double>(size);
 }
 
-void warmUpCache(size_t size, size_t numberOfFragments, size_t offset, int numberOfPasses) {
+void warmUpCache(size_t size, size_t numberOfFragments, size_t offset) {
   auto *array = new uint32_t[size];
   fillArray(array, size, numberOfFragments, offset);
-  for( int i = 0; i < 256; ++i ) {
-    getTicks(array, size, numberOfPasses);
-  }
+  count(array, size);
   delete[] array;
 }
 
-void printResults(const size_t offset, const int kNumberOfPasses) {
-  //  MultiplyMatrices();
-  const size_t kSize = gkMaxFragmentsCount * offset;
-  auto *array = new uint32_t[kSize];
-
+int main(int argc, char **argv) {
+  size_t n;
+  size_t offset = OFFSET / sizeof(uint32_t);
+  auto *mas = new uint32_t[OFFSET * 32];
+  std::ofstream fOut{"out.txt"};
   MultiplyMatrices();
-  for( int numberOfFragments = 1; numberOfFragments <= gkMaxFragmentsCount; ++numberOfFragments ) {
-    fillArray(array, kSize, numberOfFragments, offset);
-    warmUpCache(kSize, gkMaxFragmentsCount, gkOffset, gkNumberOfPasses);
-    uint32_t result = getTicks(array, kSize, kNumberOfPasses);
-    std::cout << numberOfFragments << " fragments: " << result << " ticks." << std::endl;
+  for( n = 1; n <= 32; n++ ) {
+    size_t size = (L1_CACHE + L2_CACHE + L3_CACHE) / n;
+    fillArray(mas, size, n, offset);
+    auto x = count(mas, size * n);
+    fOut << "fragments " << n << " ticks " << x << std::endl;
   }
-
-  delete[] array;
-}
-
-int main() {
-  printResults(gkOffset, gkNumberOfPasses);
-
+  delete[] mas;
   return 0;
 }
