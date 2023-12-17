@@ -1,3 +1,4 @@
+
 #include <cblas.h>
 #include <cfloat>// FLT_MIN
 #include <cmath> // fabs()
@@ -130,3 +131,137 @@ int main() {
 
     return 0;
 }
+
+/*
+
+#include <immintrin.h>
+#include <cmath>
+#include <cstdlib>
+#include <iostream>
+#include <ctime>
+#include <limits>
+#include <cblas.h>
+#include <cblas.h>
+
+enum{
+  N = 2048,
+  M = 10
+};
+
+void MultiplyMaxSums(float *matrix, float &A_1, float &A_inf){
+  //текущая сумма
+  float rowSum;
+  float columnSum;
+  //максимальные суммы
+  A_1 = std::numeric_limits<float>::min();
+  A_inf = std::numeric_limits<float>::min();
+
+  for (int i = 0; i < N; ++i){
+    rowSum = 0;
+    columnSum = 0;
+
+    for (int j = 0; j < N; ++j){
+      rowSum += std::fabs(matrix[N * i + j]);
+      columnSum += std::fabs(matrix[N * j + i]);
+    }
+
+    if (rowSum > A_1){
+      A_1 = rowSum;
+    }
+    if (columnSum > A_inf){
+      A_inf = columnSum;
+    }
+  }
+}
+
+inline void CalculateI(float *I){
+  for (int i = 0; i < N; ++i){
+    for (int j = 0; j < N; ++j){
+      if (i == j){
+        I[N * i + j] = 1;
+      } else {
+        I[N * i + j] = 0;
+      }
+    }
+  }
+}
+
+inline void CalculateB(float *matrix, float *B){
+  float A_1;
+  float A_inf;
+  MultiplyMaxSums(matrix, A_1, A_inf);
+  float div = A_1 * A_inf;
+  for (int i = 0; i < N; ++i){
+    for (int j = 0; j < N; ++j){
+      B[N * i + j] = matrix[N * j + i] / div;
+    }
+  }
+}
+
+inline void MultiplyMatrix(float *temp, float *firstMatrix, float *secondMatrix){
+  cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, N, N, N, 1.0, firstMatrix, N, secondMatrix, N, 0.0, temp, N);
+}
+
+inline void SubMatrix(float *temp, float *reduced, float *subtrahend) {
+  cblas_saxpy(N * N, -1.0, subtrahend, 1, reduced, 1);
+  cblas_scopy(N * N, reduced, 1, temp, 1);
+}
+
+void CreateZeroMatrix(float *Zero){
+  for (int i = 0; i < N * N; ++i){
+    Zero[i] = 0;
+  }
+}
+
+inline void FillMatrix(float *matrix) {
+  for (int i = 0; i < N * N; ++i) {
+    matrix[i] = float(rand());
+    matrix[i] *= (rand() % 2) ? 1 : -1;
+  }
+}
+
+inline void SumMatrix(float *temp, float *firstMatrix, float *secondMatrix) {
+  cblas_saxpy(N * N, 1.0, secondMatrix, 1, firstMatrix, 1);
+  cblas_scopy(N * N, firstMatrix, 1, temp, 1);
+}
+
+void CalculateR(float *temp, float *B, float *I, float *R, float *A){
+  MultiplyMatrix(temp, B, A);
+  SubMatrix(temp, I, temp);
+}
+
+void InverseFunction(float *matrix, float *result) {
+  auto *I = static_cast<float *>(_mm_malloc(N * N * sizeof(float), 32));
+  auto *A = static_cast<float *>(_mm_malloc(N * N * sizeof(float), 32));
+  auto *R = static_cast<float *>(_mm_malloc(N * N * sizeof(float), 32));
+  auto *B = static_cast<float *>(_mm_malloc(N * N * sizeof(float), 32));
+  auto *dgree1 = static_cast<float *>(_mm_malloc(N * N * sizeof(float), 32));
+  auto *dgree2 = static_cast<float *>(_mm_malloc(N * N * sizeof(float), 32));
+
+  CalculateI(I);
+  FillMatrix(A);
+  CalculateB(A, B);
+  CalculateR(matrix, B, I, R, A);
+
+  SumMatrix(result, I, R);
+  MultiplyMatrix(dgree1, R, R);
+  SumMatrix(I, result, dgree1);
+
+  bool flag = true;
+  for (size_t i = 2; i < M; ++i, flag = !flag) {
+    MultiplyMatrix((flag) ? dgree2 : dgree1, (flag) ? dgree1 : dgree2, R);
+    SumMatrix(I, I, (flag) ? dgree2 : dgree1);
+  }
+  MultiplyMatrix(result, I, B);
+}
+
+int main(){
+  auto *matrix = static_cast<float *>(_mm_malloc(N * N * sizeof(float), 32));
+  auto *result = static_cast<float *>(_mm_malloc(N * N * sizeof(float), 32));
+
+  unsigned int start_time = clock();
+  InverseFunction(matrix, result);
+  unsigned int end_time = clock();
+  std::cout << "time taken: " << (end_time - start_time) / 1000 << "sec" << std::endl;
+  return 0;
+}*/
